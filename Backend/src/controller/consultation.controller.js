@@ -14,7 +14,7 @@ import {
     getAllConsultationsForAdmin,
 } from "../service/consultation.service.js";
 
-// Worker submits a new consultation
+// Health Worker submits a new consultation
 // Accepts: multipart/form-data
 // Fields: patientId, symptoms (comma-separated or JSON array), notes
 // Files: attachments (multiple), aiReport (single, optional)
@@ -60,7 +60,7 @@ const getMyConsultations = async (req, res) => {
     }
 };
 
-// Admin views all consultations in their organization
+// Admin can view all consultations in their organization
 const getAdminConsultations = async (req, res) => {
     try {
         const consultations = await getAllConsultationsForAdmin(req.user.id);
@@ -81,7 +81,7 @@ const getConsultation = async (req, res) => {
     }
 };
 
-// Worker accepts AI result — closes consultation
+// Worker accepts ML-LLM report — closes consultation
 const acceptAI = async (req, res) => {
     try {
         const consultation = await acceptAiResult(req.params.id, req.user.id);

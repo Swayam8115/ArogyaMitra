@@ -9,7 +9,7 @@ workerRouter.post("/", verifyToken(["admin"]), createWorker);       // POST /api
 workerRouter.get("/", verifyToken(["admin"]), getWorkers);          // GET  /api/v1/worker
 workerRouter.delete("/:id", verifyToken(["admin"]), deleteWorker);  // DELETE /api/v1/worker/:id
 
-// Worker auth routes (public)
+// Health Worker auth routes (public)
 workerRouter.post("/login", login);                                  // POST /api/v1/worker/login
 workerRouter.post("/logout", verifyToken(["worker"]), logout);       // POST /api/v1/worker/logout
 

@@ -1,6 +1,6 @@
 import { addWorker, getWorkersByAdmin, loginWorker, deleteWorkerById } from "../service/worker.service.js";
 
-// Admin deletes a worker
+// Admin deletes a health worker
 const deleteWorker = async (req, res) => {
     try {
         const { id } = req.params;
@@ -16,7 +16,7 @@ const deleteWorker = async (req, res) => {
     }
 };
 
-// Admin adds a worker
+// Admin adds a health worker
 const createWorker = async (req, res) => {
     try {
         const { name, email, phoneNumber, password, specialization, qualifications } = req.body;
@@ -47,7 +47,7 @@ const createWorker = async (req, res) => {
     }
 };
 
-// Admin gets all workers they added
+// Admin gets all health workers they added
 const getWorkers = async (req, res) => {
     try {
         const workers = await getWorkersByAdmin(req.user.id);
@@ -57,7 +57,7 @@ const getWorkers = async (req, res) => {
     }
 };
 
-// Worker login
+// Health Worker login
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -92,7 +92,7 @@ const login = async (req, res) => {
     }
 };
 
-// Worker logout
+// Health Worker logout
 const logout = (req, res) => {
     res.clearCookie("token", {
         httpOnly: true,

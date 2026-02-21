@@ -20,7 +20,7 @@ const registerPatient = async (req, res) => {
     }
 };
 
-// Worker gets all their patients
+// Health Worker gets all their patients
 const getPatients = async (req, res) => {
     try {
         const patients = await getPatientsByWorker(req.user.id);

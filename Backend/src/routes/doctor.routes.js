@@ -9,7 +9,7 @@ doctorRouter.post("/", verifyToken(["admin"]), createDoctor);        // POST   /
 doctorRouter.get("/", verifyToken(["admin"]), getDoctors);           // GET    /api/v1/doctor
 doctorRouter.delete("/:id", verifyToken(["admin"]), deleteDoctor);   // DELETE /api/v1/doctor/:id
 
-// Worker can fetch all doctors (for escalation dropdown)
+// Health Worker can fetch all doctors (for escalation dropdown)
 doctorRouter.get("/list", verifyToken(["worker", "admin"]), getAllDoctors); // GET /api/v1/doctor/list
 
 // Doctor auth routes (public)
