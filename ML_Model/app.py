@@ -1,4 +1,4 @@
-from utils.pdf_generator import generate_pdf
+from graph.utils.pdf_generator import generate_pdf
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
