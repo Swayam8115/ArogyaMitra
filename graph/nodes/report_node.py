@@ -1,4 +1,4 @@
-from ML_Model.app import generate_pdf
+from utils.pdf_generator import generate_pdf
 from datetime import datetime
 
 def report_node(state):
