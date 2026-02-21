@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import serverConfig from "../config/serverConfig.js";
 
 // Called by admin to add a new worker
-const addWorker = async ({ name, email, phoneNumber, password }, adminId) => {
+const addWorker = async ({ name, email, phoneNumber, password, specialization, qualifications }, adminId) => {
     const existing = await Worker.findOne({ $or: [{ email }, { phoneNumber }] });
     if (existing) {
         throw new Error("Worker with this email or phone number already exists");
@@ -15,6 +15,8 @@ const addWorker = async ({ name, email, phoneNumber, password }, adminId) => {
         email,
         phoneNumber,
         password,
+        specialization,
+        qualifications,
         addedBy: adminId,
     });
 

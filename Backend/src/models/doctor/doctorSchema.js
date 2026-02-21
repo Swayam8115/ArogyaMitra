@@ -24,6 +24,10 @@ const doctorSchema = new mongoose.Schema({
         type: String, 
         required: true 
     },  // e.g., "Cardiologist"
+    qualifications: {
+        type: String,
+        required: true
+    }, // e.g., "MBBS, MD"
     isAvailable: { 
         type: Boolean, 
         default: true 

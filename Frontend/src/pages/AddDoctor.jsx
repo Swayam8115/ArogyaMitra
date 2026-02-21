@@ -51,8 +51,8 @@ const Doctors = () => {
             toast.success("Doctor deleted successfully");
             fetchDoctors();
         } catch (error) {
-             console.error(error);
-             toast.error(error.response?.data?.message || "Failed to delete doctor");
+            console.error(error);
+            toast.error(error.response?.data?.message || "Failed to delete doctor");
         }
     };
 
@@ -61,6 +61,7 @@ const Doctors = () => {
         { key: 'email', label: 'Email' },
         { key: 'phoneNumber', label: 'Phone' },
         { key: 'specialization', label: 'Specialization' },
+        { key: 'qualifications', label: 'Qualifications' },
     ];
 
     if (loading) return <div className="flex h-full items-center justify-center">Loading...</div>;
@@ -70,7 +71,7 @@ const Doctors = () => {
             <Toaster />
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-bold text-gray-800">Doctors</h1>
-                 {doctors.length > 0 && (
+                {doctors.length > 0 && (
                     <Button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2">
                         <Plus size={20} /> Add Doctor
                     </Button>
@@ -85,12 +86,12 @@ const Doctors = () => {
                     onAction={() => setIsModalOpen(true)}
                 />
             ) : (
-                <UserTable 
-                    columns={columns} 
-                    data={doctors} 
+                <UserTable
+                    columns={columns}
+                    data={doctors}
                     actions={(row) => (
-                        <button 
-                            onClick={() => handleDelete(row._id || row.id)} 
+                        <button
+                            onClick={() => handleDelete(row._id || row.id)}
                             className="text-red-500 hover:text-red-700 transition-colors"
                             title="Delete Doctor"
                         >
@@ -124,12 +125,19 @@ const Doctors = () => {
                         {...register('phoneNumber', { required: 'Phone Number is required' })}
                         error={errors.phoneNumber?.message}
                     />
-                     <Input
+                    <Input
                         label="Specialization"
                         id="specialization"
                         placeholder="Cardiologist"
                         {...register('specialization', { required: 'Specialization is required' })}
                         error={errors.specialization?.message}
+                    />
+                    <Input
+                        label="Qualifications"
+                        id="qualifications"
+                        placeholder="MBBS, MD"
+                        {...register('qualifications', { required: 'Qualifications are required' })}
+                        error={errors.qualifications?.message}
                     />
                     <Input
                         label="Password"

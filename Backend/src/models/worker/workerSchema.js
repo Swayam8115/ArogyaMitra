@@ -19,9 +19,17 @@ const workerSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    specialization: {
+        type: String,
+        required: false, // Optional for health workers
+    },
+    qualifications: {
+        type: String,
+        required: true, // E.g., "BSc Nursing"
+    },
     addedBy: {  // who added this worker (location inherited from admin)
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: "Admin" 
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Admin"
     },
 }, { timestamps: true });
 

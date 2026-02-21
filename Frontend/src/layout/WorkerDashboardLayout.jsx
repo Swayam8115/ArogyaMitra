@@ -24,9 +24,11 @@ const WorkerDashboardLayout = () => {
             <div className="flex items-center gap-4">
               <div className="text-right">
                 <p className="text-sm font-medium text-gray-900">{user?.name || 'Worker'}</p>
-                <p className="text-xs text-gray-500">Healthcare Worker</p>
+                <p className="text-xs text-gray-500">
+                  {user?.specialization || 'Healthcare Worker'} {user?.qualifications ? `| ${user.qualifications}` : ''}
+                </p>
               </div>
-              <div 
+              <div
                 onClick={() => setIsProfileOpen(true)}
                 className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-700 font-bold hover:bg-emerald-200 transition-all cursor-pointer focus:outline-none ring-offset-2 hover:ring-2 hover:ring-emerald-400"
               >

@@ -51,8 +51,8 @@ const Workers = () => {
             toast.success("Worker deleted successfully");
             fetchWorkers();
         } catch (error) {
-             console.error(error);
-             toast.error(error.response?.data?.message || "Failed to delete worker");
+            console.error(error);
+            toast.error(error.response?.data?.message || "Failed to delete worker");
         }
     };
 
@@ -60,6 +60,8 @@ const Workers = () => {
         { key: 'name', label: 'Name' },
         { key: 'email', label: 'Email' },
         { key: 'phoneNumber', label: 'Phone' },
+        { key: 'specialization', label: 'Specialization' },
+        { key: 'qualifications', label: 'Qualifications' },
     ];
 
     if (loading) return <div className="flex h-full items-center justify-center">Loading...</div>;
@@ -69,7 +71,7 @@ const Workers = () => {
             <Toaster />
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-bold text-gray-800">Health Workers</h1>
-                 {workers.length > 0 && (
+                {workers.length > 0 && (
                     <Button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2">
                         <Plus size={20} /> Add Worker
                     </Button>
@@ -84,12 +86,12 @@ const Workers = () => {
                     onAction={() => setIsModalOpen(true)}
                 />
             ) : (
-                <UserTable 
-                    columns={columns} 
-                    data={workers} 
+                <UserTable
+                    columns={columns}
+                    data={workers}
                     actions={(row) => (
-                        <button 
-                            onClick={() => handleDelete(row._id || row.id)} 
+                        <button
+                            onClick={() => handleDelete(row._id || row.id)}
                             className="text-red-500 hover:text-red-700 transition-colors"
                             title="Delete Worker"
                         >
@@ -122,6 +124,20 @@ const Workers = () => {
                         placeholder="+91 9876543210"
                         {...register('phoneNumber', { required: 'Phone Number is required' })}
                         error={errors.phoneNumber?.message}
+                    />
+                    <Input
+                        label="Specialization"
+                        id="specialization"
+                        placeholder="e.g., General (Optional)"
+                        {...register('specialization')}
+                        error={errors.specialization?.message}
+                    />
+                    <Input
+                        label="Qualifications"
+                        id="qualifications"
+                        placeholder="e.g., BSc Nursing"
+                        {...register('qualifications', { required: 'Qualifications are required' })}
+                        error={errors.qualifications?.message}
                     />
                     <Input
                         label="Password"

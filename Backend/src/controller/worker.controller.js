@@ -19,14 +19,14 @@ const deleteWorker = async (req, res) => {
 // Admin adds a worker
 const createWorker = async (req, res) => {
     try {
-        const { name, email, phoneNumber, password } = req.body;
+        const { name, email, phoneNumber, password, specialization, qualifications } = req.body;
 
-        if (!name || !email || !phoneNumber || !password) {
-            return res.status(400).json({ message: "All fields are required" });
+        if (!name || !email || !phoneNumber || !password || !qualifications) {
+            return res.status(400).json({ message: "Name, email, phone number, password, and qualifications are required" });
         }
 
         const worker = await addWorker(
-            { name, email, phoneNumber, password },
+            { name, email, phoneNumber, password, specialization, qualifications },
             req.user.id  // adminId from JWT
         );
 
@@ -37,6 +37,8 @@ const createWorker = async (req, res) => {
                 name: worker.name,
                 email: worker.email,
                 phoneNumber: worker.phoneNumber,
+                specialization: worker.specialization,
+                qualifications: worker.qualifications,
                 addedBy: worker.addedBy,
             },
         });
@@ -81,6 +83,8 @@ const login = async (req, res) => {
                 email: worker.email,
                 phoneNumber: worker.phoneNumber,
                 location: worker.addedBy?.location,
+                specialization: worker.specialization,
+                qualifications: worker.qualifications,
             },
         });
     } catch (error) {

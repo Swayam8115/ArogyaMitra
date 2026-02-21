@@ -19,14 +19,14 @@ const deleteDoctor = async (req, res) => {
 // Admin adds a doctor
 const createDoctor = async (req, res) => {
     try {
-        const { name, email, phoneNumber, password, specialization } = req.body;
+        const { name, email, phoneNumber, password, specialization, qualifications } = req.body;
 
-        if (!name || !email || !phoneNumber || !password || !specialization) {
+        if (!name || !email || !phoneNumber || !password || !specialization || !qualifications) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
         const doctor = await addDoctor(
-            { name, email, phoneNumber, password, specialization },
+            { name, email, phoneNumber, password, specialization, qualifications },
             req.user.id  // adminId from JWT
         );
 
@@ -38,6 +38,7 @@ const createDoctor = async (req, res) => {
                 email: doctor.email,
                 phoneNumber: doctor.phoneNumber,
                 specialization: doctor.specialization,
+                qualifications: doctor.qualifications,
                 isAvailable: doctor.isAvailable,
                 addedBy: doctor.addedBy,
             },
@@ -102,6 +103,7 @@ const login = async (req, res) => {
                 phoneNumber: doctor.phoneNumber,
                 location: doctor.addedBy?.location,
                 specialization: doctor.specialization,
+                qualifications: doctor.qualifications,
             },
         });
     } catch (error) {
