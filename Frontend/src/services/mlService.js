@@ -4,7 +4,9 @@ import axios from 'axios';
 const ML_BASE_URL = import.meta.env.VITE_ML_BASE_URL || 'https://dashayush-arogyamitra-model.hf.space';
 
 // LangGraph pipeline server (run locally: python graph/server.py)
-const GRAPH_BASE_URL = import.meta.env.VITE_GRAPH_BASE_URL || 'http://localhost:8001';
+// const GRAPH_BASE_URL = import.meta.env.VITE_GRAPH_BASE_URL || 'http://localhost:8001';
+const GRAPH_BASE_URL = import.meta.env.VITE_GRAPH_BASE_URL || 'https://dashayush-arogyamitra-graph-api.hf.space';
+
 
 const mlApi = axios.create({
   baseURL: ML_BASE_URL,
