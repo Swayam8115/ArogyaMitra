@@ -10,7 +10,7 @@ def llm_node(state):
     Rules:
     - Do NOT modify predicted disease.
     - Do NOT introduce new diagnoses.
-    - Use only the provided data.
+    - Use only the provided data and provide all the fields in the JSON.
 
     XAI Output:
     {json.dumps(xai_data, indent=2)}

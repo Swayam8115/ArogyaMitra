@@ -270,9 +270,15 @@ def generate_pdf(data: dict) -> bytes:
         HRFlowable(width="100%", thickness=1, color=ACCENT),
         Spacer(1, 8),
     ]))
-    for i, p in enumerate(data['precautions'], 1):
-        story.append(Paragraph(f"&nbsp;&nbsp;{i}.  {p.capitalize()}", body_style))
+    
+    r_p = llm.get("recommended_precautions", "")
+    if r_p:
+        story.append(Paragraph(f"&nbsp;&nbsp;1.  {r_p}", body_style))
         story.append(Spacer(1, 4))
+    else:
+        for i, p in enumerate(data.get('precautions', []), 1):
+            story.append(Paragraph(f"&nbsp;&nbsp;{i}.  {p.capitalize()}", body_style))
+            story.append(Spacer(1, 4))
     story.append(Spacer(1, 14))
 
     # Disclaimer 

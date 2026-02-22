@@ -21,6 +21,8 @@ class LLMConclusion(BaseModel):
     key_contributing_factors: str
     recommended_next_steps: str
     referral_recommendation: str
+    escalate_to_doctor: bool
+    recommended_precautions: str
     
 
 def generate_llm_prompt(ml_result, graph_result):
@@ -41,12 +43,14 @@ def call_llm(prompt: str) -> LLMConclusion:
         "severity_assessment": "Moderate (Severity Score: 2.67). Requires monitoring and further diagnostic tests.",
         "key_contributing_factors": "High bilirubin levels, physical symptoms (Jaundice), and patient history.",
         "recommended_next_steps": "Blood count, liver function tests, and ultrasound of the abdomen.",
-        "referral_recommendation": "Gastroenterologist for specialized review."
+        "referral_recommendation": "Gastroenterologist for specialized review.",
+        "escalate_to_doctor": True,
+        "recommended_precautions": "Recommended precautions include staying hydrated, resting, avoiding alcohol, and following medical advice for any underlying conditions."
     }
 
     system_content = (
         "You are a clinical decision-support assistant. "
-        "You MUST return ONLY valid JSON. "
+        "You MUST return all JSON fields and ONLY valid JSON. "
         "Do NOT include any conversational text, headers, or markdown blocks. "
         "Your response must start with '{' and end with '}'.\n\n"
         "Strict Schema:\n"
@@ -56,7 +60,9 @@ def call_llm(prompt: str) -> LLMConclusion:
         "  \"severity_assessment\": \"string\",\n"
         "  \"key_contributing_factors\": \"string\",\n"
         "  \"recommended_next_steps\": \"string\",\n"
-        "  \"referral_recommendation\": \"string\"\n"
+        "  \"referral_recommendation\": \"string\",\n"
+        "  \"escalate_to_doctor\": boolean,\n"
+        "  \"recommended_precautions\": \"string\"\n"
         "}\n\n"
         f"Example Correct Output:\n{json.dumps(few_shot_example, indent=2)}\n\n"
         "Important: Return the raw JSON string starting with { and ending with }."

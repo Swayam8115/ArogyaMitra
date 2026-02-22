@@ -215,6 +215,31 @@ const ConsultationAnalysis = ({
   return (
     <div className="space-y-4">
 
+      {/* Recommended Next Steps & Action Plan Box */}
+      <div className="bg-white rounded-2xl border border-red-50 shadow-sm overflow-hidden">
+        <div className="flex items-center gap-3 px-6 py-4 border-b border-red-50 bg-[#fff5f5]">
+          <AlertCircle className="w-5 h-5 text-red-500" />
+          <h3 className="text-base font-bold text-gray-900">Recommended Next Steps & Action Plan</h3>
+        </div>
+        <div className="px-6 py-5 space-y-4">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-bold text-gray-800">Escalate to Doctor:</span>
+            <span className={`px-3 py-1 rounded-full text-sm font-bold ${llmResult.escalate_to_doctor ? 'bg-red-100 text-red-600' : 'bg-[#e6fcf0] text-[#009b55]'}`}>
+              {llmResult.escalate_to_doctor ? 'Yes' : 'No'}
+            </span>
+          </div>
+
+          <div className="bg-[#fafafa] rounded-xl p-4 border border-gray-100">
+            <div className="flex items-start gap-2">
+              <span className="text-red-500 font-bold text-sm mt-0.5">1.</span>
+              <p className="text-sm text-gray-700 leading-relaxed">
+                {llmResult.recommended_precautions || "Recommended precautions include staying hydrated, resting adequately, and following medical advice closely."}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* ML Results */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div className="flex items-center gap-3 px-6 py-4 border-b border-gray-50 bg-blue-50">
@@ -240,19 +265,6 @@ const ConsultationAnalysis = ({
                   {((mlResult.confidence || 0) * 100).toFixed(1)}%
                 </span>
               </div>
-            </div>
-          )}
-          {mlResult.precautions?.length > 0 && (
-            <div>
-              <p className="text-xs font-medium text-gray-500 mb-2">Precautions</p>
-              <ul className="space-y-1.5">
-                {mlResult.precautions.map((p, i) => (
-                  <li key={i} className="text-sm text-gray-700 flex items-start gap-2">
-                    <span className="text-blue-500 mt-0.5">•</span>
-                    <span>{p}</span>
-                  </li>
-                ))}
-              </ul>
             </div>
           )}
           {mlResult.description && (
@@ -319,11 +331,10 @@ const ConsultationAnalysis = ({
           <button
             onClick={handleDownloadPdf}
             disabled={!pdfUrl || isDownloading}
-            className={`flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl font-medium transition-colors ${
-              pdfUrl
-                ? 'bg-green-600 hover:bg-green-700 text-white'
-                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-            }`}
+            className={`flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl font-medium transition-colors ${pdfUrl
+              ? 'bg-green-600 hover:bg-green-700 text-white'
+              : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              }`}
           >
             {isDownloading ? (
               <><Loader2 size={18} className="animate-spin" /> Downloading…</>
