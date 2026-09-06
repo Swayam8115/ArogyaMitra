@@ -111,8 +111,13 @@ def generate_pdf(data: dict) -> bytes:
 
     conf = data['confidenceScore']
     conf_color = SUCCESS if conf >= 75 else WARNING if conf >= 50 else DANGER
-    sev = data['severityScore']
-    sev_color  = DANGER if sev >= 5 else WARNING if sev >= 3 else SUCCESS
+
+    raw_sev = data.get('severityScore') or data.get('llmConclusion', {}).get('severity_score') or 3
+    try:
+        sev = int(raw_sev)
+    except (ValueError, TypeError):
+        sev = 3
+    sev_color = DANGER if sev >= 5 else WARNING if sev >= 3 else SUCCESS
 
     diag_data = [
         [Paragraph('<b>Condition</b>', label_style),
@@ -166,44 +171,30 @@ def generate_pdf(data: dict) -> bytes:
     story.append(alt_table)
     story.append(Spacer(1, 14))
 
-    # Symptoms & Severity 
-    story.append(Paragraph("Reported Symptoms & Severity", section_style))
+    # Symptoms 
+    story.append(Paragraph("Reported Symptoms", section_style))
     story.append(HRFlowable(width="100%", thickness=1, color=ACCENT))
     story.append(Spacer(1, 8))
 
-    sev_headers = [[
+    sym_headers = [[
+        Paragraph('#', label_style),
         Paragraph('Symptom', label_style),
-        Paragraph('Severity (1–7)', label_style),
-        Paragraph('Level', label_style),
     ]]
-    def sev_label(s):
-        if s >= 6: return 'High'
-        if s >= 3: return 'Moderate'
-        return 'Low'
-    def sev_row_color(s):
-        if s >= 6: return colors.HexColor('#FDEDEC')
-        if s >= 3: return colors.HexColor('#FEF9E7')
-        return colors.HexColor('#EAFAF1')
-
-    sev_rows = [
-        [Paragraph(sv['symptom'], body_style),
-         Paragraph(str(sv['severity']), body_style),
-         Paragraph(sev_label(sv['severity']), body_style)]
-        for sv in data['symptomSeverities']
+    sym_rows = [
+        [Paragraph(str(i+1), body_style),
+         Paragraph(sym, body_style)]
+        for i, sym in enumerate(data.get('matchedSymptoms', []))
     ]
-    sev_table = Table(sev_headers + sev_rows, colWidths=[8*cm, 5*cm, 4*cm])
-    row_styles = [
-        ('BACKGROUND', (0, i+1), (-1, i+1), sev_row_color(data['symptomSeverities'][i]['severity']))
-        for i in range(len(sev_rows))
-    ]
-    sev_table.setStyle(TableStyle([
+    sym_table = Table(sym_headers + sym_rows, colWidths=[2*cm, 15*cm])
+    sym_table.setStyle(TableStyle([
         ('BACKGROUND',    (0,0),(-1,0), PRIMARY),
+        ('ROWBACKGROUNDS',(0,1),(-1,-1), [LIGHT_BG, WHITE]),
         ('TOPPADDING',    (0,0),(-1,-1), 7),
         ('BOTTOMPADDING', (0,0),(-1,-1), 7),
         ('LEFTPADDING',   (0,0),(-1,-1), 8),
         ('GRID',          (0,0),(-1,-1), 0.5, colors.HexColor('#AED6F1')),
-    ] + row_styles))
-    story.append(sev_table)
+    ]))
+    story.append(sym_table)
     story.append(Spacer(1, 14))
 
     # LIME Explanation 

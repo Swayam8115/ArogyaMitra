@@ -1,11 +1,13 @@
 import axios from 'axios';
 
-// ML Model is deployed on Hugging Face Spaces
-const ML_BASE_URL = import.meta.env.VITE_ML_BASE_URL || 'https://dashayush-arogyamitra-model.hf.space';
+// ML Microservice — ML_Model/app.py running on port 8001.
+// Used by the frontend only for fetching /symptoms.
+// The main backend's xai_node (not the frontend) calls /predict on this service.
+const ML_BASE_URL = import.meta.env.VITE_ML_BASE_URL || 'http://127.0.0.1:8001';
 
-// LangGraph pipeline server (run locally: python graph/server.py)
-// const GRAPH_BASE_URL = import.meta.env.VITE_GRAPH_BASE_URL || 'http://localhost:8001';
-const GRAPH_BASE_URL = import.meta.env.VITE_GRAPH_BASE_URL || 'https://dashayush-arogyamitra-graph-api.hf.space';
+// Main Backend — graph/server.py running on port 8000.
+// All /analyze/json calls go to this service (which internally calls the ML microservice).
+const GRAPH_BASE_URL = import.meta.env.VITE_GRAPH_BASE_URL || 'http://127.0.0.1:8000';
 
 
 const mlApi = axios.create({
@@ -17,6 +19,7 @@ const graphApi = axios.create({
   baseURL: GRAPH_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
 });
+
 
 /**
  * Fetch all known symptoms from the ML model

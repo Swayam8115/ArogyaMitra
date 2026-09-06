@@ -11,12 +11,6 @@ from graph import graph, PredictRequest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Override ML_BASE_URL to use deployed HF Spaces endpoint 
-# The xai_node calls run_prediction() which is loaded from ML_Model/app.py.
-# Since ML_Model/app.py loads the model locally (or downloads from HF Hub),
-# the graph runs the model in process no need for HTTP calls here.
-# The deployed HF Spaces URL is used only by the frontend for direct JSON queries.
-
 app = FastAPI(title="ArogyaMitra Graph API", version="1.0.0")
 
 app.add_middleware(
@@ -111,7 +105,7 @@ def analyze_json(req: AnalyzeRequest):
         "mlResult": {
             "disease":          xai_output.get("primaryDiagnosis"),
             "confidence":       xai_output.get("confidenceScore", 0) / 100,
-            "severityScore":    xai_output.get("severityScore"),
+            "severityScore":    (llm_summary.severity_score if llm_summary else None) or xai_output.get("severityScore") or 3,
             "topPredictions":   xai_output.get("topPredictions", []),
             "matchedSymptoms":  xai_output.get("matchedSymptoms", []),
             "precautions":      xai_output.get("precautions", []),
@@ -126,4 +120,4 @@ def analyze_json(req: AnalyzeRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8001, reload=False)
+    uvicorn.run(app, host="0.0.0.0", port=8000, reload=False)

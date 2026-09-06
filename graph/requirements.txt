@@ -1,6 +1,6 @@
 langgraph
 langchain
-openai
+google-genai
 python-dotenv
 pydantic
 httpx

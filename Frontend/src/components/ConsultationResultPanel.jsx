@@ -19,20 +19,19 @@ const ConfidenceBadge = ({ value }) => {
   );
 };
 
-const SeverityBar = ({ value }) => {
-  const pct = Math.round((value / 7) * 100);
-  const color = value >= 5 ? 'bg-red-500' : value >= 3 ? 'bg-yellow-500' : 'bg-green-500';
+const SeverityBar = ({ value = 3 }) => {
+  const val = value || 3;
+  const pct = Math.round((val / 7) * 100);
+  const color = val >= 5 ? 'bg-red-500' : val >= 3 ? 'bg-yellow-500' : 'bg-green-500';
   return (
     <div className="flex items-center gap-2">
       <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
         <div className={`h-full rounded-full ${color} transition-all`} style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-xs font-semibold text-gray-700 w-8">{value}/7</span>
+      <span className="text-xs font-semibold text-gray-700 w-8">{val}/7</span>
     </div>
   );
 };
-
-// ── Main Component ─────────────────────────────────────────────────────────────
 
 const ConsultationResultPanel = ({ mlResult, consultationId, patients, patientId, symptoms, onClose, onCreated }) => {
   const [showLime, setShowLime] = useState(false);

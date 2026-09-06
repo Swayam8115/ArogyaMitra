@@ -19,7 +19,7 @@ dist/
 *.egg-info/
 .eggs/
 
-venv/
+.venv/
 .env/
 env/
 ENV/

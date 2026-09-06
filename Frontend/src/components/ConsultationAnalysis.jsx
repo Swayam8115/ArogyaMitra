@@ -295,6 +295,7 @@ const ConsultationAnalysis = ({
               <p className="text-sm text-gray-700">{llmResult.severity_assessment}</p>
             </div>
           )}
+
           {llmResult.recommended_next_steps && (
             <div>
               <p className="text-xs font-medium text-gray-500 mb-1">Recommended Next Steps</p>

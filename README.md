@@ -177,14 +177,18 @@ cd ArogyaMitra
 
 **macOS/Linux:**
 ```bash
+cd graph
 python3 -m venv .venv
 source .venv/bin/activate
+../
 ```
 
 **Windows (PowerShell):**
 ```powershell
+cd graph
 python -m venv .venv
 .venv\Scripts\Activate.ps1
+../
 ```
 
 ### 3. Initialize Backend
@@ -207,7 +211,7 @@ npm run dev
 
 ### 5. ML Service Setup
 ```bash
-cd ../ML_Model
+cd ../graph
 pip install -r requirements.txt
 python server.py
 ```
