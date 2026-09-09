@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getPatients } from '../services/patientService';
-import { predict } from '../services/mlService';
+import { getSymptoms } from '../services/mlService';
 import { submitConsultation } from '../services/consultationService';
 import ConsultationResultPanel from './ConsultationResultPanel';
 import toast from 'react-hot-toast';
-import { X, ChevronRight, ChevronLeft, Loader2, FlaskConical, Stethoscope, Paperclip, User, FileText } from 'lucide-react';
+import { X, ChevronRight, ChevronLeft, Loader2, FlaskConical, Stethoscope, Paperclip, User, FileText, AlertTriangle } from 'lucide-react';
 
 const STEP_LABELS = ['Patient & Notes', 'Symptoms', 'Attachments'];
 const FILE_TYPES = [
@@ -15,34 +15,6 @@ const FILE_TYPES = [
   { key: 'other2',     label: 'Other Report 2',       accept: '*' },
 ];
 
-const SYMPTOM_LIST = [
-  'itching','skin rash','nodal skin eruptions','continuous sneezing','shivering','chills','joint pain',
-  'stomach pain','acidity','ulcers on tongue','muscle wasting','vomiting','burning micturition',
-  'fatigue','weight gain','anxiety','cold hands and feets','mood swings','weight loss','restlessness',
-  'lethargy','patches in throat','irregular sugar level','cough','high fever','sunken eyes',
-  'breathlessness','sweating','dehydration','indigestion','headache','yellowish skin','dark urine',
-  'nausea','loss of appetite','pain behind the eyes','back pain','constipation','abdominal pain',
-  'diarrhoea','mild fever','yellow urine','yellowing of eyes','acute liver failure','fluid overload',
-  'swelling of stomach','swelled lymph nodes','malaise','blurred and distorted vision','phlegm',
-  'throat irritation','redness of eyes','sinus pressure','runny nose','congestion','chest pain',
-  'weakness in limbs','fast heart rate','pain during bowel movements','pain in anal region',
-  'bloody stool','irritation in anus','neck pain','dizziness','cramps','bruising','obesity',
-  'swollen legs','swollen blood vessels','puffy face and eyes','enlarged thyroid','brittle nails',
-  'swollen extremeties','excessive hunger','extra marital contacts','drying and tingling lips',
-  'slurred speech','knee pain','hip joint pain','muscle weakness','stiff neck','swelling joints',
-  'movement stiffness','spinning movements','loss of balance','unsteadiness','weakness of one body side',
-  'loss of smell','bladder discomfort','foul smell of urine','continuous feel of urine','passage of gases',
-  'internal itching','toxic look (typhos)','depression','irritability','muscle pain',
-  'altered sensorium','red spots over body','belly pain','abnormal menstruation','dischromic patches',
-  'watering from eyes','increased appetite','polyuria','family history','mucoid sputum',
-  'rusty sputum','lack of concentration','visual disturbances','receiving blood transfusion',
-  'receiving unsterile injections','coma','stomach bleeding','distention of abdomen',
-  'history of alcohol consumption','fluid overload','blood in sputum','prominent veins on calf',
-  'palpitations','painful walking','pus filled pimples','blackheads','scurring',
-  'skin peeling','silver like dusting','small dents in nails','inflammatory nails','blister',
-  'red sore around nose','yellow crust ooze',
-];
-
 const CreateConsultationModal = ({ isOpen, onClose, onCreated }) => {
   const [step, setStep] = useState(0);
   const [patients, setPatients] = useState([]);
@@ -50,17 +22,39 @@ const CreateConsultationModal = ({ isOpen, onClose, onCreated }) => {
   const [notes, setNotes] = useState('');
   const [selectedSymptoms, setSelectedSymptoms] = useState([]);
   const [symptomSearch, setSymptomSearch] = useState('');
+  const [symptomsList, setSymptomsList] = useState([]);
+  const [loadingSymptoms, setLoadingSymptoms] = useState(false);
+  const [symptomsError, setSymptomsError] = useState('');
   const [files, setFiles] = useState({});
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [mlResult, setMlResult] = useState(null);
   const [consultationId, setConsultationId] = useState(null);
   const [stepError, setStepError] = useState('');
 
+  const loadSymptoms = useCallback(async () => {
+    setLoadingSymptoms(true);
+    setSymptomsError('');
+    try {
+      const symptomsData = await getSymptoms();
+      if (Array.isArray(symptomsData) && symptomsData.length > 0) {
+        setSymptomsList(symptomsData);
+      } else {
+        setSymptomsError('Received an empty symptom list from the ML service.');
+      }
+    } catch (err) {
+      console.error('Failed to fetch symptoms from ML API:', err);
+      setSymptomsError('Unable to fetch symptoms from ML service (http://127.0.0.1:8001/symptoms). Ensure the ML backend service is running.');
+    } finally {
+      setLoadingSymptoms(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (isOpen) {
       getPatients().then(d => setPatients(d.patients || [])).catch(console.error);
+      loadSymptoms();
     }
-  }, [isOpen]);
+  }, [isOpen, loadSymptoms]);
 
   const reset = () => {
     setStep(0); setPatientId(''); setNotes(''); setSelectedSymptoms([]);
@@ -75,10 +69,9 @@ const CreateConsultationModal = ({ isOpen, onClose, onCreated }) => {
     );
   };
 
-  const filteredSymptoms = SYMPTOM_LIST.filter(s =>
-    s.includes(symptomSearch.toLowerCase().replace(/\s/g, '_'))
-    || s.replace(/_/g, ' ').includes(symptomSearch.toLowerCase())
-  ).slice(0, 80);
+  const filteredSymptoms = symptomsList.filter(s =>
+    s.toLowerCase().includes(symptomSearch.toLowerCase())
+  );
 
   const handleFileChange = (key, file) => {
     setFiles(prev => ({ ...prev, [key]: file }));
@@ -209,33 +202,59 @@ const CreateConsultationModal = ({ isOpen, onClose, onCreated }) => {
                 placeholder="Search symptoms..."
                 value={symptomSearch}
                 onChange={e => setSymptomSearch(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-colors"
+                disabled={loadingSymptoms || !!symptomsError}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-colors disabled:opacity-50"
               />
               {selectedSymptoms.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
                   {selectedSymptoms.map(s => (
                     <span key={s} className="flex items-center gap-1 text-xs bg-primary-100 text-primary-800 px-2.5 py-1 rounded-full font-medium">
-                      {s.replace(/_/g, ' ')}
+                      {s}
                       <button onClick={() => toggleSymptom(s)} className="hover:text-red-500 ml-0.5">×</button>
                     </span>
                   ))}
                 </div>
               )}
-              <div className="max-h-52 overflow-y-auto flex flex-wrap gap-1.5 border border-gray-100 rounded-xl p-3 bg-gray-50">
-                {filteredSymptoms.map(symptom => (
+
+              {loadingSymptoms ? (
+                <div className="flex items-center justify-center p-8 text-gray-500 text-sm gap-2 border border-gray-100 rounded-xl bg-gray-50">
+                  <Loader2 size={18} className="animate-spin text-primary-600" />
+                  Loading symptoms from ML API (127.0.0.1:8001)...
+                </div>
+              ) : symptomsError ? (
+                <div className="p-4 bg-red-50 border border-red-100 rounded-xl text-xs space-y-3">
+                  <div className="flex items-start gap-2 text-red-700">
+                    <AlertTriangle size={16} className="flex-shrink-0 mt-0.5" />
+                    <span>{symptomsError}</span>
+                  </div>
                   <button
-                    key={symptom}
-                    onClick={() => toggleSymptom(symptom)}
-                    className={`text-xs px-2.5 py-1 rounded-full border transition-all ${
-                      selectedSymptoms.includes(symptom)
-                        ? 'bg-primary-600 text-white border-primary-600'
-                        : 'bg-white text-gray-700 border-gray-200 hover:border-primary-300'
-                    }`}
+                    onClick={loadSymptoms}
+                    className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
                   >
-                    {symptom.replace(/_/g, ' ')}
+                    Retry Fetching Symptoms
                   </button>
-                ))}
-              </div>
+                </div>
+              ) : filteredSymptoms.length === 0 ? (
+                <div className="p-6 text-center text-gray-400 text-xs border border-gray-100 rounded-xl bg-gray-50">
+                  No matching symptoms found.
+                </div>
+              ) : (
+                <div className="max-h-52 overflow-y-auto flex flex-wrap gap-1.5 border border-gray-100 rounded-xl p-3 bg-gray-50">
+                  {filteredSymptoms.map(symptom => (
+                    <button
+                      key={symptom}
+                      onClick={() => toggleSymptom(symptom)}
+                      className={`text-xs px-2.5 py-1 rounded-full border transition-all ${
+                        selectedSymptoms.includes(symptom)
+                          ? 'bg-primary-600 text-white border-primary-600'
+                          : 'bg-white text-gray-700 border-gray-200 hover:border-primary-300'
+                      }`}
+                    >
+                      {symptom}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 

@@ -3,6 +3,7 @@
 # ============================================================
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
 
@@ -72,9 +73,7 @@ required_files = [
 ]
 
 for file_path in required_files:
-
     if not os.path.exists(file_path):
-
         raise FileNotFoundError(
             f"Required model artifact not found: {file_path}"
         )
@@ -85,9 +84,7 @@ for file_path in required_files:
 # ============================================================
 
 print("Loading ArogyaMitra ML model...")
-
 model = joblib.load(MODEL_FILE)
-
 label_encoder = joblib.load(
     LABEL_ENCODER_FILE
 )
@@ -154,23 +151,26 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# Enable CORS for all origins (frontend may run on a different port)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 # ============================================================
 # REQUEST SCHEMA
 # ============================================================
 
 class PredictRequest(BaseModel):
-
     symptoms: List[str]
-
     patientName: Optional[str] = "Patient"
-
     patientAge: Optional[int] = None
-
     patientGender: Optional[str] = None
-
     workerName: Optional[str] = "Healthcare Worker"
-
     location: Optional[str] = ""
 
 
@@ -179,23 +179,18 @@ class PredictRequest(BaseModel):
 # ============================================================
 
 def clean_feature_name(name):
-
     name = str(name).strip().lower()
-
     name = name.replace("-", "_")
-
     name = re.sub(
         r"\s+",
         "_",
         name
     )
-
     name = re.sub(
         r"_+",
         "_",
         name
     )
-
     return name
 
 
@@ -211,9 +206,7 @@ def run_prediction(req: PredictRequest):
     )
 
     matched = []
-
     unmatched = []
-
 
     # --------------------------------------------------------
     # MATCH SYMPTOMS
@@ -224,37 +217,28 @@ def run_prediction(req: PredictRequest):
         clean_symptom = clean_feature_name(
             symptom
         )
-
         if clean_symptom in symptom_cols:
-
             index = symptom_cols.index(
                 clean_symptom
             )
-
             input_vector[index] = 1
-
             matched.append(
                 clean_symptom
             )
-
         else:
-
             unmatched.append(
                 symptom
             )
-
 
     # --------------------------------------------------------
     # ENSURE AT LEAST ONE SYMPTOM MATCHED
     # --------------------------------------------------------
 
     if not matched:
-
         raise HTTPException(
             status_code=400,
             detail="None of the provided symptoms are recognized."
         )
-
 
     # --------------------------------------------------------
     # CREATE DATAFRAME
@@ -265,15 +249,12 @@ def run_prediction(req: PredictRequest):
         columns=symptom_cols
     )
 
-
     # --------------------------------------------------------
     # PREDICTION
     # --------------------------------------------------------
-
     proba = model.predict_proba(
         input_df
     )[0]
-
 
     # --------------------------------------------------------
     # TOP 3 PREDICTIONS
@@ -283,29 +264,23 @@ def run_prediction(req: PredictRequest):
         proba
     )[::-1][:3]
 
-
     top_disease = disease_classes[
         top_idx[0]
     ]
-
 
     confidence = round(
         float(proba[top_idx[0]]) * 100,
         2
     )
 
-
     predictions = [
-
         {
             "disease": disease_classes[i],
-
             "confidence": round(
                 float(proba[i]) * 100,
                 2
             )
         }
-
         for i in top_idx
     ]
 
@@ -320,27 +295,22 @@ def run_prediction(req: PredictRequest):
         num_features=10
     )
 
-
     lime_reasons = [
-
         {
             "feature": feature.replace(
                 "_",
                 " "
             ).title(),
-
             "impact": round(
                 float(weight),
                 4
             ),
-
             "direction": (
                 "Supports Diagnosis"
                 if weight > 0
                 else "Against Diagnosis"
             )
         }
-
         for feature, weight in exp.as_list()
     ]
 
@@ -351,11 +321,8 @@ def run_prediction(req: PredictRequest):
 
     # Currently unavailable because the trained model
     # does not have a valid symptom-severity mapping.
-
     severity_score = None
-
     symptom_severities = []
-
 
     # --------------------------------------------------------
     # DESCRIPTION
@@ -366,7 +333,6 @@ def run_prediction(req: PredictRequest):
         "Description not available."
     )
 
-
     # --------------------------------------------------------
     # PRECAUTIONS
     # --------------------------------------------------------
@@ -376,31 +342,19 @@ def run_prediction(req: PredictRequest):
         []
     )
 
-
     # --------------------------------------------------------
     # FINAL RESPONSE
     # --------------------------------------------------------
-
     return {
-
         "patientName": req.patientName,
-
         "patientAge": req.patientAge,
-
         "patientGender": req.patientGender,
-
         "workerName": req.workerName,
-
         "location": req.location,
-
         "primaryDiagnosis": top_disease,
-
         "confidenceScore": confidence,
-
         "severityScore": severity_score,
-
         "topPredictions": predictions,
-
         "matchedSymptoms": [
             symptom.replace(
                 "_",
@@ -411,13 +365,9 @@ def run_prediction(req: PredictRequest):
         ],
 
         "unmatchedSymptoms": unmatched,
-
         "symptomSeverities": symptom_severities,
-
         "description": description,
-
         "precautions": precautions,
-
         "limeExplanation": lime_reasons
     }
 
@@ -441,18 +391,15 @@ def root():
 
 @app.get("/symptoms")
 def get_symptoms():
-
     return {
         "symptoms": [
             symptom.replace(
                 "_",
                 " "
             )
-
             for symptom in symptom_cols
         ]
     }
-
 
 # ============================================================
 # PREDICTION ENDPOINT
@@ -464,10 +411,13 @@ def predict(
 ):
 
     if not req.symptoms:
-
         raise HTTPException(
             status_code=400,
             detail="At least one symptom is required."
         )
-
     return run_prediction(req)
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("app:app", host="0.0.0.0", port=8001, reload=True)
